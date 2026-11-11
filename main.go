@@ -1,35 +1,54 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
-type DBRow map[string]string
+type DBRow []any
 
-type DataBase []DBRow
+type DB map[string]DBRow
 
 type DataBaser interface {
-	Append(r DBRow) DataBase
-	Delete(r DBRow)
-	Get(i int64)
+	AppendElement(elem any, key string)
+	DeleteElement(elem any, key string) error
+	GetElement(elem any, key string) int64
 }
 
-func (r DBRow) String() string {
+func (db DB) String() string {
 	temp := ""
-	for k, v := range r {
-		temp = fmt.Sprintf("%s\n%s\t:\t%s\n", temp, k, v)
+	for k, v := range db {
+		temp = fmt.Sprintf("%s\n%s\t:\t[", temp, k)
+		for i := range v {
+			temp = fmt.Sprintf("%s %v", temp, v[i])
+		}
+		temp = fmt.Sprintf("%s ]", temp)
 	}
 
 	return temp
 }
 
-func (db DataBase) Append(r DBRow) DataBase {
-	db = append(db, r)
-	return db
+func (db *DB) AppendElement(elem any, key string) {
+	if (*db) == nil {
+		*db = make(DB)
+	}
+
+	(*db)[key] = append((*db)[key], elem)
+}
+
+func (db *DB) DeleteElement(elem any, key string) error {
+	_, ok := (*db)[key]
+	if !ok {
+		return fmt.Errorf("No row with name \"%s\" found!", key)
+	}
+
+	return nil
 }
 
 func main() {
 
-	var Jack DataBase
+	var Jack DB
 
-	Jack = Jack.Append(DBRow{"Age": "25"})
+	Jack.AppendElement([]int{25, 65, 29, 54, 38}, "Age")
+	Jack.AppendElement("dj", "Age")
 	fmt.Println(Jack)
 }
